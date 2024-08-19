@@ -12,7 +12,6 @@ pub struct CreateRestaurantArgs {
     symbol: String,
     currency: Pubkey,
     url: String,
-    customer_count: u64,
     bump: u8,
 }
 
@@ -29,11 +28,6 @@ pub struct CreateRestaurant<'info> {
         bump
     )]
     pub admin_profile: Account<'info, AdminProfile>,
-    #[account(
-        seeds = [b"manager"],
-        bump = manager.bump,
-    )]
-    pub manager: Account<'info, Manager>,
     #[account(
         init,
         payer = restaurant_admin,
@@ -56,7 +50,7 @@ impl<'info> CreateRestaurant<'info> {
                 symbol: args.symbol,
                 currency: args.currency,
                 url: args.url,
-                customer_count: args.customer_count,
+                customer_count: 0,
                 bump
             }   
         );

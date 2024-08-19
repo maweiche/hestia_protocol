@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use crate::{
     state::{
-        Admin,
+        AdminProfile,
         Protocol,
     },
     constant,
@@ -16,10 +16,10 @@ pub struct AdminRemove<'info> {
     #[account(
         mut,
         close = primary_admin, // this is where the account rent funds will be sent to after the admin is removed
-        seeds = [b"admin_state", admin.key().as_ref()],
+        seeds = [b"admin", admin.key().as_ref()],
         bump
     )]
-    pub admin_state: Account<'info, Admin>,
+    pub admin_profile: Account<'info, AdminProfile>,
     pub primary_admin: Signer<'info>,
     #[account(
         seeds = [b"protocol"],

@@ -1,6 +1,4 @@
 use anchor_lang::prelude::*;
-use anchor_spl::associated_token::Create;
-use mpl_core::accounts::BaseCollectionV1;
 use crate::{state::{AdminProfile, MenuCategoryType, Menu, MenuItem, Restaurant, Employee, EmployeeType}, errors::SetupError};
 
 #[derive(AnchorDeserialize, AnchorSerialize)]

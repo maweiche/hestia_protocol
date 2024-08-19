@@ -59,7 +59,7 @@ pub struct AddCustomerOrder<'info> {
     pub customer: Account<'info, Customer>,
     #[account(mut)]
     pub signer: Signer<'info>,
-    #[account(address = restaurant.currency.clone())]
+    #[account()]
     pub currency: Account<'info, Mint>,
     #[account(
         mut,
