@@ -54,10 +54,14 @@ pub mod hestia_protocol {
     }
 
     // // remove restaurant employee -- removes perms to execute employee functions
-    // pub fn restaurant_remove_employee(ctx: Context<Initialize>) -> Result<()> {}
+    pub fn restaurant_remove_employee(ctx: Context<DeleteEmployee>, args: DeleteEmployeeArgs) -> Result<()> {
+        instructions::remove_employee::handler(ctx, args)
+    }
 
     // // promote restaurant employee -- removes perms to execute employee functions
-    // pub fn restaurant_remove_employee(ctx: Context<Initialize>) -> Result<()> {}
+    pub fn restaurant_promote_employee(ctx: Context<PromoteEmployee>, args: PromoteEmployeeArgs) -> Result<()> {
+        instructions::promote_employee::handler(ctx, args)
+    }
  
     // // add inventory item -- adds an item to the restaurant's inventory, category based on enum
     pub fn restaurant_add_inventory_item(ctx: Context<AddInventory>, args: AddInventoryArgs) -> Result<()> {
@@ -113,5 +117,7 @@ pub mod hestia_protocol {
     }
 
     // // cancel order -- cancels an order in the restaurant's order list
-    // pub fn restaurant_cancel_order(ctx: Context<Initialize>) -> Result<()> {}
+    pub fn restaurant_cancel_order(ctx: Context<DeleteCustomerOrder>, args: DeleteOrderArgs) -> Result<()> {
+        instructions::cancel_order::handler(ctx, args)
+    }
 }

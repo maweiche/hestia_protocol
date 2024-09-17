@@ -1,9 +1,6 @@
 pub mod initialize_restaurant;
 pub use initialize_restaurant::*;
 
-pub mod add_employee;
-pub use add_employee::*;
-
 pub mod add_inventory;
 pub use add_inventory::*;
 
