@@ -79,7 +79,7 @@ pub enum EmployeeType {
 
 #[account]
 pub struct InventoryItem {
-    pub sku: u64,              // Stock Keeping Unit -- how we identify the product
+    pub sku: String,              // Stock Keeping Unit -- how we identify the product
     pub category: InventoryCategoryType,      // Category of the product -- stored as public key for easy sorting and filtering
     pub name: String,          // Name of the product -- what the product is called
     pub price: u64,            // Price of the product -- how much it costs for ordering
@@ -118,7 +118,7 @@ impl Space for Menu {
 
 #[account]
 pub struct MenuItem {
-    pub sku: u64,              // Stock Keeping Unit -- how we identify the product
+    pub sku: String,              // Stock Keeping Unit -- how we identify the product
     pub category: MenuCategoryType,      // Category of the product -- stored as public key for easy sorting and filtering
     pub name: String,          // Name of the product -- what the product is called
     pub price: u64,            // Price of the product -- how much it costs for ordering
@@ -129,7 +129,7 @@ pub struct MenuItem {
 }
 
 impl Space for MenuItem {
-    const INIT_SPACE: usize = 8 + 8 + 32 + 4 + 8 + 8 + 8 + 8 + 1;
+    const INIT_SPACE: usize = 8 + 4 + 32 + 4 + 8 + 8 + MenuCategoryType::INIT_SPACE + 8 + 8 + 1;
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace)]

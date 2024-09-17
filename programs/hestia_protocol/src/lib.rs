@@ -9,7 +9,7 @@ pub use constants::*;
 pub use instructions::*;
 pub use state::*;
 
-declare_id!("9xgjpMAcbbx82QzNMkoQHZNuRpuu8YfcnhBzgtEv9mSC");
+declare_id!("93UGwDhoXvZxYuxHq47aWKFcQTgxTM8V55ytPnET1Qjd");
 
 #[program]
 pub mod hestia_protocol {
@@ -18,6 +18,7 @@ pub mod hestia_protocol {
     /////////////////////////////////////////////////////////////
     ////////////////PROTOCOL FUNCTIONS///////////////////////////
     ////////////////////////////////////////////////////////////
+    
     // inits protocol and sets up the global state with an admin
     pub fn protocol_init(ctx: Context<ProtocolInit>) -> Result<()> {
         instructions::initialize_protocol::handler(ctx)

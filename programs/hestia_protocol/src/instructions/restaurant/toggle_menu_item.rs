@@ -5,7 +5,7 @@ use crate::{state::{AdminProfile, MenuCategoryType, Menu, MenuItem, Restaurant, 
 
 #[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct ToggleMenuItemArgs {
-    sku: u64,
+    sku: String,
     active: bool,
 }
 
@@ -14,7 +14,7 @@ pub struct ToggleMenuItemArgs {
 pub struct ToggleMenuItem<'info> {
     #[account(
         mut,
-        seeds = [b"item", restaurant.key().as_ref(), args.sku.to_le_bytes().as_ref()],
+        seeds = [b"item", restaurant.key().as_ref(), args.sku.as_bytes().as_ref()],
         bump
     )] 
     pub item: Account<'info, MenuItem>,

@@ -5,7 +5,7 @@ use crate::{state::{AdminProfile, Manager, Restaurant, Employee, EmployeeType, I
 
 #[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct AddInventoryArgs {
-    sku: u64,
+    sku: String,
     category: u8,
     name: String,
     price: u64,
@@ -27,8 +27,8 @@ pub struct AddInventory<'info> {
     #[account(
         init_if_needed,
         payer = restaurant_admin,
-        space = InventoryItem::INIT_SPACE,
-        seeds = [b"inventory", restaurant.key().as_ref(), args.sku.to_le_bytes().as_ref()],
+        space = InventoryItem::INIT_SPACE + args.sku.len() + args.name.len(),
+        seeds = [b"inventory", restaurant.key().as_ref(), args.sku.as_ref()],
         bump,
     )] 
     pub item: Account<'info, InventoryItem>,

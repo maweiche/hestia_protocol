@@ -171,7 +171,7 @@ describe("hestia_protocol", () => {
   // seeds = [b"inventory", restaurant.key().as_ref(), args.sku.to_le_bytes().as_ref()],
   const [itemPda, itemBump] = PublicKey.findProgramAddressSync([Buffer.from('inventory'), newRestaurantPda.toBuffer(), Buffer.from(sku.toString())], program.programId);
   const addInventoryArgs = {
-    sku: sku.toString(),
+    sku: new anchor.BN(sku),
     category: 2,
     name: 'Chicken Wings',
     price: new anchor.BN(10),
@@ -198,7 +198,7 @@ describe("hestia_protocol", () => {
   });
 
   const updateInventoryArgs = {
-    sku: sku.toString(),
+    sku: new anchor.BN(sku),
     category: 2,
     name: 'Chicken Wings',
     description: '6 pieces of chicken wings',
@@ -225,11 +225,11 @@ describe("hestia_protocol", () => {
     // console.log("Your transaction signature", tx);
   });
 
-  const menuItemSku = (Math.floor(Math.random() * 1000000)).toString();
-  const [menuItemPda, menuItemBump] = PublicKey.findProgramAddressSync([Buffer.from('item'), newRestaurant.publicKey.toBuffer(), Buffer.from(menuItemSku)], program.programId);
-  const [menuPda, menuBump] = PublicKey.findProgramAddressSync([Buffer.from('menu'), newRestaurant.publicKey.toBuffer()], program.programId);
+  const menuItemSku = (Math.floor(Math.random() * 1000000));
+  const [menuItemPda, menuItemBump] = PublicKey.findProgramAddressSync([Buffer.from('item'), newRestaurantPda.toBuffer(), Buffer.from(menuItemSku.toString())], program.programId);
+  const [menuPda, menuBump] = PublicKey.findProgramAddressSync([Buffer.from('menu'), newRestaurantPda.toBuffer()], program.programId);
   const menuItemArgs = {
-    sku: menuItemSku,
+    sku: new anchor.BN(menuItemSku),
     category: 0,
     name: 'Chicken Wings',
     price: new anchor.BN(10),
@@ -242,26 +242,35 @@ describe("hestia_protocol", () => {
     // Add your test here.
     const tx = await program.methods
       .restaurantAddMenuItem(menuItemArgs)
-      .accounts({
+      .accountsPartial({
+        item: menuItemPda,
+        menu: menuPda,
         restaurantAdmin: newRestaurantOwner.publicKey,
+        adminProfile: newRestaurantOwnerProfile,
         restaurant: newRestaurantPda,
+        systemProgram: anchor.web3.SystemProgram.programId,
       })
       .signers([newRestaurantOwner])
       .rpc();
     // console.log("Your transaction signature", tx);
   });
 
+  const toggleMenuItemArgs = {
+    sku: new anchor.BN(menuItemSku),
+    active: true
+  }
 
   it("Toggle menu item!", async () => {
     // Add your test here.
     const tx = await program.methods
-      .restaurantToggleMenuItem({
-        sku: menuItemArgs.sku,
-        active: true
-      })
-      .accounts({
+      .restaurantToggleMenuItem(toggleMenuItemArgs)
+      .accountsPartial({
+        item: itemPda,
+        menu: menuPda,
         restaurantAdmin: newRestaurantOwner.publicKey,
+        adminProfile: newRestaurantOwnerProfile,
         restaurant: newRestaurantPda,
+        systemProgram: anchor.web3.SystemProgram.programId,
       })
       .signers([newRestaurantOwner])
       .rpc();

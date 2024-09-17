@@ -5,7 +5,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-hestia_protocol = "9xgjpMAcbbx82QzNMkoQHZNuRpuu8YfcnhBzgtEv9mSC"
+hestia_protocol = "93UGwDhoXvZxYuxHq47aWKFcQTgxTM8V55ytPnET1Qjd"
 
 [registry]
 url = "https://api.apr.dev"
@@ -15,4 +15,5 @@ cluster = "Localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+owner = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/owner.ts"
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/hestia_protocol.ts"

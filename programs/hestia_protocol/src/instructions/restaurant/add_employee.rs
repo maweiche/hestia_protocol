@@ -16,7 +16,7 @@ pub struct AddEmployee<'info> {
     #[account(
         init,
         payer = restaurant_admin,
-        space = Employee::INIT_SPACE,
+        space = Employee::INIT_SPACE + args.username.len(),
         seeds = [b"employee", restaurant.key().as_ref(), args.wallet.as_ref()],
         bump,
     )] 
