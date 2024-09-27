@@ -38,10 +38,8 @@ impl<'info> DeleteCustomerOrder<'info> {
     }
 }
 
-pub fn handler(ctx: Context<DeleteCustomerOrder>, args: DeleteOrderArgs) -> Result<()> {
-    let bump = ctx.bumps.order;
+pub fn handler(ctx: Context<DeleteCustomerOrder>) -> Result<()> {
     
-
     ctx.accounts.delete_order()?;
 
     Ok(())

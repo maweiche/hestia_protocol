@@ -9,7 +9,7 @@ pub use constants::*;
 pub use instructions::*;
 pub use state::*;
 
-declare_id!("93UGwDhoXvZxYuxHq47aWKFcQTgxTM8V55ytPnET1Qjd");
+declare_id!("BfKK2fRqZKyX2qce7UEkKntUCK9BMQR1ozgmitvPQtD2");
 
 #[program]
 pub mod hestia_protocol {
@@ -128,7 +128,7 @@ pub mod hestia_protocol {
     }
 
     // // cancel order -- cancels an order in the restaurant's order list
-    pub fn restaurant_cancel_order(ctx: Context<DeleteCustomerOrder>, args: DeleteOrderArgs) -> Result<()> {
-        instructions::cancel_order::handler(ctx, args)
+    pub fn restaurant_cancel_order(ctx: Context<DeleteCustomerOrder>) -> Result<()> {
+        instructions::cancel_order::handler(ctx)
     }
 }
