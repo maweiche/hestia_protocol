@@ -209,7 +209,21 @@ pub struct RewardVoucher{
 }
 
 impl Space for RewardVoucher {
-    const INIT_SPACE: usize = 8 + 8 + 32 + 32 + MenuCategoryType::INIT_SPACE + 8 + 1;
+    const INIT_SPACE: usize = 8 + 8 + 32 + 32 + MenuCategoryType::INIT_SPACE + 2 + 2 + 8 + 8 +1;
+}
+
+#[account]
+pub struct CompletedRewardVoucher {
+    pub id: u64,
+    pub reward: Pubkey,
+    pub category: MenuCategoryType,
+    pub share: u16,
+    pub price: u64,
+    pub bump: u8,
+}
+
+impl Space for CompletedRewardVoucher {
+    const INIT_SPACE: usize = 8 + 8 + 32 + MenuCategoryType::INIT_SPACE + 2 + 8 + 1;
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]

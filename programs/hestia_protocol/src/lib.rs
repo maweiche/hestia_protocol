@@ -117,7 +117,9 @@ pub mod hestia_protocol {
     // ////////////////////////////////////////////////////////////
 
     // // buy reward -- allows a customer to buy a reward
-    // pub fn customer_buy_reward(ctx: Context<Initialize>) -> Result<()> {}
+    pub fn customer_buy_reward(ctx: Context<BuyRewardVoucher>, uri: String) -> Result<()> {
+        instructions::buy_reward::handler(ctx, uri)
+    }
 
     // // add order -- adds an order to the restaurant's order list
     pub fn restaurant_add_order(ctx: Context<AddCustomerOrder>, args: CustomerOrderArgs) -> Result<()> {
