@@ -45,7 +45,7 @@ pub struct AddCustomerOrder<'info> {
         init_if_needed,
         payer = signer,
         space = CustomerOrder::INIT_SPACE,
-        seeds = [b"order", restaurant.key().as_ref(), args.order_id.to_le_bytes().as_ref(), signer.key().as_ref()],
+        seeds = [b"order", restaurant.key().as_ref(), args.order_id.to_le_bytes().as_ref()],
         bump,
     )] 
     pub order: Account<'info, CustomerOrder>,

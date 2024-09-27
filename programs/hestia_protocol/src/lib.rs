@@ -109,10 +109,9 @@ pub mod hestia_protocol {
     }
    
     // // update order -- updates an order in the restaurant's order list
-    // pub fn restaurant_update_order(ctx: Context<Initialize>) -> Result<()> {}
-
-    // // close order -- closes an order in the restaurant's order list
-    // pub fn restaurant_close_order(ctx: Context<Initialize>) -> Result<()> {}
+    pub fn restaurant_update_order(ctx: Context<UpdateCustomerOrder>, args: UpdateOrderArgs) -> Result<()> {
+        instructions::update_order::handler(ctx, args)
+    }
 
     // //////////////////////////////////////////////////////////////
     // //////////////////CUSTOMER FUNCTIONS/////////////////////////

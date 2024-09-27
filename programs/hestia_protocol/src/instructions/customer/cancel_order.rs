@@ -1,29 +1,5 @@
-use anchor_lang::{
-    prelude::*, 
-    solana_program::{
-        program_memory::sol_memcpy,
-        sysvar::instructions::{
-            self,
-            load_current_index_checked,
-            load_instruction_at_checked
-        }
-    }, Bump
-};
-
-use anchor_spl::{
-    associated_token::AssociatedToken, 
-    token::{Mint, TokenAccount, Token, transfer, Transfer}
-};
-use std::str::FromStr;
-use anchor_spl::associated_token::Create;
-use mpl_core::accounts::BaseCollectionV1;
-use crate::{state::{Customer, CustomerOrder, Restaurant, StatusType, EmployeeType, InventoryCategoryType, InventoryItem}, errors::{SetupError, BuyingError},
-constants::{
-    // protocol_currency, 
-    signing_authority, 
-    ED25519_PROGRAM_ID
-},
-};
+use anchor_lang::prelude::*;
+use crate::state::{Customer, CustomerOrder, Restaurant};
 
 #[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct DeleteOrderArgs {
@@ -38,7 +14,7 @@ pub struct DeleteCustomerOrder<'info> {
     #[account(
         mut,
         close = signer,
-        seeds = [b"order", restaurant.key().as_ref(), args.order_id.to_le_bytes().as_ref(), signer.key().as_ref()],
+        seeds = [b"order", restaurant.key().as_ref(), args.order_id.to_le_bytes().as_ref()],
         bump,
     )] 
     pub order: Account<'info, CustomerOrder>,
@@ -56,14 +32,7 @@ pub struct DeleteCustomerOrder<'info> {
 }
 
 impl<'info> DeleteCustomerOrder<'info> {
-    pub fn delete_order(&mut self, args: DeleteOrderArgs, bump: u8) -> Result<()> {
-
-        // Close the order account
-        // TOD0
-
-        self.order.close(
-            self.signer.to_account_info()
-        )?;
+    pub fn delete_order(&mut self) -> Result<()> {
 
         Ok(())
     }
@@ -73,7 +42,7 @@ pub fn handler(ctx: Context<DeleteCustomerOrder>, args: DeleteOrderArgs) -> Resu
     let bump = ctx.bumps.order;
     
 
-    ctx.accounts.delete_order(args, bump)?;
+    ctx.accounts.delete_order()?;
 
     Ok(())
 }
