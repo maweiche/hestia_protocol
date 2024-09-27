@@ -195,6 +195,23 @@ impl Space for Reward {
     const INIT_SPACE: usize = 8 + 32 + 4 + 32 + 4 + 8 + 32 + 4 + 1;
 }
 
+#[account]
+pub struct RewardVoucher{
+    pub id: u64,
+    pub reward: Pubkey,
+    pub restaurant: Pubkey,
+    pub category: MenuCategoryType,
+    pub share: u16,
+    pub share_sold: u16,
+    pub price: u64,
+    pub starting_time: i64,
+    pub bump: u8,
+}
+
+impl Space for RewardVoucher {
+    const INIT_SPACE: usize = 8 + 8 + 32 + 32 + MenuCategoryType::INIT_SPACE + 8 + 1;
+}
+
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
 pub struct Attributes {
     pub key: String,

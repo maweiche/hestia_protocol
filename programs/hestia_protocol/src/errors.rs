@@ -12,7 +12,9 @@ pub enum SetupError {
     #[msg("You used an invalid condition")]
     InvalidCondition,
     #[msg("You used an invalid object type")]
-    InvalidObjectType
+    InvalidObjectType,
+    #[msg("You used an invalid type")]
+    InvalidType,
 }
 
 #[error_code]

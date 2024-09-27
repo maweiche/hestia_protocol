@@ -90,7 +90,9 @@ pub mod hestia_protocol {
     }
 
     // // add reward -- adds a reward to the restaurant's rewards
-    // pub fn restaurant_add_reward(ctx: Context<Initialize>) -> Result<()> {}
+    pub fn restaurant_add_reward(ctx: Context<AddRewardVoucher>, args: AddRewardVoucherArgs) -> Result<()> {
+        instructions::add_reward::handler(ctx, args)
+    }
 
     // // remove reward -- removes a reward from the restaurant's rewards
     // pub fn restaurant_remove_reward(ctx: Context<Initialize>) -> Result<()> {}

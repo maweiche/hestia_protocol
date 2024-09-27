@@ -1,3 +1,7 @@
+// CREATE REWARD ESTABLISHES A "REWARD" ACCOUNT
+// THIS THEN ALLOWS THE RESTAURANT OWNER TO THEN "ADD" REWARD
+// WHICH WHAT THE USERS WILL MINT REWARDS FROM
+
 use anchor_lang::prelude::*;
 use mpl_core::{
     instructions::CreateCollectionV2CpiBuilder, 

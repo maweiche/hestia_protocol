@@ -1,6 +1,3 @@
-pub const GOLD_MEMBERSHIP: u64 = 100;
-pub const PLATINUM_MEMBERSHIP: u64 = 1000;
-
 use anchor_lang::declare_id;
 
 pub const ED25519_PROGRAM_ID: &str = "Ed25519SigVerify111111111111111111111111111";
