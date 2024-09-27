@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use crate::{state::{AdminProfile, Manager, Restaurant, Employee, EmployeeType}, errors::SetupError};
+use crate::state::{AdminProfile,Restaurant, Employee};
 
 #[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct DeleteEmployeeArgs {

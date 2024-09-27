@@ -1,28 +1,25 @@
 use anchor_lang::{
     prelude::*, 
-    solana_program::{
-        program_memory::sol_memcpy,
-        sysvar::instructions::{
-            self,
-            load_current_index_checked,
-            load_instruction_at_checked
-        }
+    solana_program::sysvar::instructions::{
+        self,
+        load_current_index_checked,
+        load_instruction_at_checked
     }
+    
 };
-
 use anchor_spl::{
     associated_token::AssociatedToken, 
     token::{Mint, TokenAccount, Token, transfer, Transfer}
 };
 use std::str::FromStr;
-use anchor_spl::associated_token::Create;
-use mpl_core::accounts::BaseCollectionV1;
-use crate::{state::{Customer, CustomerOrder, Restaurant, StatusType, EmployeeType, InventoryCategoryType, InventoryItem}, errors::{SetupError, BuyingError},
-constants::{
-    // protocol_currency, 
-    signing_authority, 
-    ED25519_PROGRAM_ID
-},
+use crate::{
+    state::{Customer, CustomerOrder, Restaurant, StatusType}, 
+    errors::BuyingError,
+    constants::{
+        // protocol_currency, 
+        signing_authority, 
+        ED25519_PROGRAM_ID
+    },
 };
 
 #[derive(AnchorDeserialize, AnchorSerialize)]

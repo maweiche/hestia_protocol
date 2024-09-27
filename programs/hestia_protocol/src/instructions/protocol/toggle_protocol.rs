@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use crate::{constants::admin_wallet as ADMIN, state::Protocol, errors::SetupError};
+use crate::state::Protocol;
 use mpl_core::types::{OracleValidation, ExternalValidationResult};
 
 #[derive(Accounts)]

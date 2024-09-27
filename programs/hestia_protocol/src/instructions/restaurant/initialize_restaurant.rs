@@ -1,8 +1,5 @@
 use anchor_lang::prelude::*;
-// import clock sysvar
-use anchor_spl::associated_token::Create;
-use mpl_core::accounts::BaseCollectionV1;
-use crate::{state::{AdminProfile, Manager, Restaurant, RestaurantType}, errors::SetupError};
+use crate::{state::{AdminProfile, Restaurant, RestaurantType}, errors::SetupError};
 
 #[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct CreateRestaurantArgs {

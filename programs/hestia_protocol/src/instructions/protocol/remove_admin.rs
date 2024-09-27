@@ -1,12 +1,6 @@
 use anchor_lang::prelude::*;
-use crate::{
-    state::{
-        AdminProfile,
-        Protocol,
-    },
-    constant,
-    // errors::{SetupError, ProtocolError},
-};
+use crate::state::{ AdminProfile, Protocol };
+
 
 #[derive(Accounts)]
 pub struct AdminRemove<'info> {
@@ -72,9 +66,6 @@ impl<'info> AdminRemove<'info> {
 pub fn handler(ctx: Context<AdminRemove>) -> Result<()> {
     // Make sure it's the admin of the protocol that is initializing the new admin and that the new admin is not the admin of the protocol
     // require!(ctx.accounts.owner.key() == ADMIN::id() && ctx.accounts.owner.key() != ctx.accounts.new_admin.key(), SetupError::Unauthorized);
-
-    // Generate the bumps
-    // let bumps = ctx.bumps;
 
     // Initialize the new admin_profile
     ctx.accounts.remove_admin()?;

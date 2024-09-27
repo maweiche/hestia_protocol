@@ -1,7 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::associated_token::Create;
-use mpl_core::accounts::BaseCollectionV1;
-use crate::{state::{AdminProfile, Manager, Restaurant, Employee, EmployeeType, InventoryCategoryType, InventoryItem}, errors::SetupError};
+use crate::{state::{AdminProfile, Restaurant, InventoryCategoryType, InventoryItem}, errors::SetupError};
 
 #[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct AddInventoryArgs {
@@ -97,4 +95,4 @@ pub fn handler(ctx: Context<AddInventory>, args: AddInventoryArgs) -> Result<()>
     }
 
     Ok(())
-}
+}  

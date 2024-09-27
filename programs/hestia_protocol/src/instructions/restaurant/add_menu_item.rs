@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use crate::{state::{AdminProfile, MenuCategoryType, Menu, MenuItem, Restaurant, Employee, EmployeeType}, errors::SetupError};
+use crate::{state::{AdminProfile, MenuCategoryType, Menu, MenuItem, Restaurant}, errors::SetupError};
 
 #[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct AddMenuItemArgs {
