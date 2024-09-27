@@ -89,13 +89,20 @@ pub mod hestia_protocol {
         instructions::toggle_menu_item::handler(ctx, args)
     }
 
+    // // create reward -- creates reward account an award voucher account can be created from
+    pub fn restaurant_create_reward(ctx: Context<CreateReward>, args: CreateRewardArgs) -> Result<()> {
+        instructions::create_reward::handler(ctx, args)
+    }
+
     // // add reward -- adds a reward to the restaurant's rewards
     pub fn restaurant_add_reward(ctx: Context<AddRewardVoucher>, args: AddRewardVoucherArgs) -> Result<()> {
         instructions::add_reward::handler(ctx, args)
     }
 
     // // remove reward -- removes a reward from the restaurant's rewards
-    // pub fn restaurant_remove_reward(ctx: Context<Initialize>) -> Result<()> {}
+    pub fn restaurant_remove_reward(ctx: Context<RemoveRewardVoucher>) -> Result<()> {
+        instructions::remove_reward::handler(ctx)
+    }
 
     // // add customer -- adds a customer to the restaurant's customer list
     // pub fn restaurant_add_customer(ctx: Context<Initialize>) -> Result<()> {}

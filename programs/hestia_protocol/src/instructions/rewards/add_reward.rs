@@ -33,9 +33,6 @@ pub struct AddRewardVoucher<'info> {
         bump = manager.bump,
     )]
     pub manager: Account<'info, Manager>,
-    #[account(mut)]
-    ///CHECK: This account will be checked by the constraint
-    pub creator: AccountInfo<'info>,
     #[account(constraint = reward.update_authority == manager.key())] 
     pub reward: Account<'info, BaseCollectionV1>,
     #[account(
@@ -46,7 +43,6 @@ pub struct AddRewardVoucher<'info> {
         bump,
     )] 
     pub voucher: Account<'info, RewardVoucher>,
-
     pub system_program: Program<'info, System>,
 }
 
