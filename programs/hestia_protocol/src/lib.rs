@@ -74,7 +74,9 @@ pub mod hestia_protocol {
     }
 
     // // remove an inventory item -- removes an item from the restaurant's inventory
-    // pub fn restaurant_remove_inventory_item(ctx: Context<Initialize>) -> Result<()> {}
+    pub fn restaurant_remove_inventory_item(ctx: Context<RemoveInventory>) -> Result<()> {
+        instructions::remove_inventory::handler(ctx)
+    }
 
     // // add menu item -- adds an item to the restaurant's menu, category based on enum
     pub fn restaurant_add_menu_item(ctx: Context<AddMenuItem>, args: AddMenuItemArgs) -> Result<()> {
@@ -103,9 +105,6 @@ pub mod hestia_protocol {
     pub fn restaurant_remove_reward(ctx: Context<RemoveRewardVoucher>) -> Result<()> {
         instructions::remove_reward::handler(ctx)
     }
-
-    // // add customer -- adds a customer to the restaurant's customer list
-    // pub fn restaurant_add_customer(ctx: Context<Initialize>) -> Result<()> {}
    
     // // update order -- updates an order in the restaurant's order list
     // pub fn restaurant_update_order(ctx: Context<Initialize>) -> Result<()> {}
