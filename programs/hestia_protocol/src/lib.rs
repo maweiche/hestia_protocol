@@ -84,7 +84,9 @@ pub mod hestia_protocol {
     }
 
     // // update a menu item -- updates an item in the restaurant's menu
-    // pub fn restaurant_update_menu_item(ctx: Context<Initialize>) -> Result<()> {}
+    pub fn restaurant_update_menu_item(ctx: Context<UpdateMenuItem>, args: UpdateMenuItemArgs) -> Result<()> {
+        instructions::update_menu_item::handler(ctx, args)
+    }
 
     // // toggle a menu item -- removes an item from the restaurant's menu
     pub fn restaurant_toggle_menu_item(ctx: Context<ToggleMenuItem>, args: ToggleMenuItemArgs) -> Result<()> {
