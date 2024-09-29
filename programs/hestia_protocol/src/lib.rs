@@ -123,7 +123,7 @@ pub mod hestia_protocol {
     }
 
     // // cancel order -- cancels an order in the restaurant's order list
-    pub fn restaurant_cancel_order(ctx: Context<DeleteCustomerOrder>) -> Result<()> {
-        instructions::cancel_order::handler(ctx)
+    pub fn restaurant_cancel_order(ctx: Context<CancelCustomerOrder>, args: CancelOrderArgs) -> Result<()> {
+        instructions::cancel_order::handler(ctx, args)
     }
 }

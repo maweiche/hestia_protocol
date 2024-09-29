@@ -68,3 +68,17 @@ pub enum BuyingError {
     #[msg("Insufficient Points")]
     InsufficientPoints
 }
+
+#[error_code]
+pub enum OrderError {
+    #[msg("This order has already been cancelled")]
+    AlreadyCancelled,
+    #[msg("The customer is not authorized to cancel this order")]
+    InvalidCustomer,
+    #[msg("You are not authorized to perform this action")]
+    Unauthorized,
+    #[msg("Invalid order status type")]
+    InvalidStatusType,
+    #[msg("The order does not belong to the correct restaurant")]
+    InvalidRestaurant,
+}

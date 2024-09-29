@@ -69,7 +69,7 @@ impl Space for Employee {
     const INIT_SPACE: usize = 8 + 32 + 32 + 4 + 4 + 1;
 }
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace)]
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace, PartialEq)]
 pub enum EmployeeType {
     TeamMember, // 0
     TeamLeader, // 1
@@ -185,7 +185,7 @@ impl Space for CustomerOrder {
     const INIT_SPACE: usize = 8 + 32 + 8 + 8 + 8 + 1 + 8 + 8 + 1;
 }
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace)]
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace, PartialEq)]
 pub enum StatusType {
     Pending, // 0
     Completed, // 1
