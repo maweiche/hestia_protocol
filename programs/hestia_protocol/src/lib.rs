@@ -74,13 +74,13 @@ pub mod hestia_protocol {
     }
 
     // // add menu item -- adds an item to the restaurant's menu, category based on enum
-    pub fn restaurant_add_menu_item(ctx: Context<AddMenuItem>, args: AddMenuItemArgs) -> Result<()> {
-        instructions::add_menu_item::handler(ctx, args)
+    pub fn restaurant_add_menu_item(ctx: Context<ManageMenuItem>, args: MenuItemArgs) -> Result<()> {
+        instructions::add_menu_item::add_menu_item_handler(ctx, args)
     }
 
     // // update a menu item -- updates an item in the restaurant's menu
-    pub fn restaurant_update_menu_item(ctx: Context<UpdateMenuItem>, args: UpdateMenuItemArgs) -> Result<()> {
-        instructions::update_menu_item::handler(ctx, args)
+    pub fn restaurant_update_menu_item(ctx: Context<ManageMenuItem>, args: MenuItemArgs) -> Result<()> {
+        instructions::add_menu_item::update_menu_item_handler(ctx, args)
     }
 
     // // toggle a menu item -- removes an item from the restaurant's menu

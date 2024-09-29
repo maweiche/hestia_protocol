@@ -183,4 +183,6 @@ The Vision - Sol Factory Solana Program is licensed under the [MIT License](http
 
 
 <!-- TOODO!!! -->
-- add burn ix to trade in reward for item
+- ix comments needed for menu, order, rewards, lib, refine errors, state
+- readme fix
+- demo video record

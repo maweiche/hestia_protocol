@@ -118,18 +118,18 @@ impl Space for Menu {
 
 #[account]
 pub struct MenuItem {
-    pub sku: String,              // Stock Keeping Unit -- how we identify the product
-    pub category: MenuCategoryType,      // Category of the product -- stored as public key for easy sorting and filtering
-    pub name: String,          // Name of the product -- what the product is called
-    pub price: u64,            // Price of the product -- how much it costs for ordering
-    pub description: String,   // Description of the product -- what the product is
-    pub ingredients: Vec<u64>, // Ingredients of the product -- what is used to make the product, this is what will be used to deduct from the inventory
-    pub active: bool,          // Active status of the product -- whether it is available for ordering
+    pub sku: String,
+    pub category: MenuCategoryType,
+    pub name: String,
+    pub price: u64,
+    pub description: String,
+    pub active: bool,
     pub bump: u8,
 }
 
+
 impl Space for MenuItem {
-    const INIT_SPACE: usize = 8 + 4 + 32 + 4 + 8 + 8 + MenuCategoryType::INIT_SPACE + 8 + 8 + 1;
+    const INIT_SPACE: usize = 8 + 4  + MenuCategoryType::INIT_SPACE + 4 + 8 + 4 + 4 + 1; //TODO() - Double check bool space
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace)]
@@ -141,6 +141,17 @@ pub enum MenuCategoryType {
     Beverage, // 4
     Alcohol, // 5
     Other, // 6
+}
+
+#[account]
+pub struct IngredientList {
+    pub menu_item: Pubkey,
+    pub ingredients: Vec<(Pubkey, u64)>, // (InventoryItem pubkey, quantity)
+    pub bump: u8,
+}
+
+impl Space for IngredientList {
+    const INIT_SPACE: usize = 8 + 32 + 4 + 1;
 }
 
 #[account]
