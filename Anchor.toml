@@ -7,11 +7,14 @@ skip-lint = false
 [programs.localnet]
 hestia_protocol = "BfKK2fRqZKyX2qce7UEkKntUCK9BMQR1ozgmitvPQtD2"
 
+[programs.devnet]
+hestia_protocol = "BfKK2fRqZKyX2qce7UEkKntUCK9BMQR1ozgmitvPQtD2"
+
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "Devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

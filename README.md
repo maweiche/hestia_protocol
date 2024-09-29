@@ -34,7 +34,6 @@ The Hestia Protocol is structured to set up an umbrella of inter-connected Solan
 
 > If you don't have Anchor installed, you can use [Solana Playground](https://beta.solpg.io/) to build and deploy.
 
-
 ### Installing
 
 To begin, clone the repo and install the necessary dependencies.
@@ -170,3 +169,18 @@ Contributors names and contact info
 ## License
 
 The Vision - Sol Factory Solana Program is licensed under the [MIT License](https://github.com/playground-solana/vision_program/LICENSE).
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- TOODO!!! -->
+- add burn ix to trade in reward for item

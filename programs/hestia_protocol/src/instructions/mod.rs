@@ -1,17 +1,17 @@
-pub mod setup;
-pub use setup::*;
-
-pub mod protocol;
-pub use protocol::*;
-
-pub mod restaurant;
-pub use restaurant::*;
-
+pub mod admin;
 pub mod customer;
-pub use customer::*;
-
 pub mod employee;
-pub use employee::*;
-
+pub mod initialization;
+pub mod inventory;
+pub mod menu;
+pub mod order;
 pub mod rewards;
+
+pub use admin::*;
+pub use customer::*;
+pub use employee::*;
+pub use initialization::*;
+pub use inventory::*;
+pub use menu::*;
+pub use order::*;
 pub use rewards::*;
