@@ -92,3 +92,11 @@ pub enum RewardError {
     #[msg("Invalid category")]
     InvalidCategory,
 }
+
+#[error_code]
+pub enum MenuError {
+    #[msg("Unauthorized access")]
+    Unauthorized,
+    #[msg("Invalid SKU provided")]
+    InvalidSku,
+}

@@ -38,7 +38,7 @@ use mpl_core::{
     - Ensures the correct reward voucher is used (if applicable)
 */
 
-#[derive(AnchorDeserialize, AnchorSerialize)]
+#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
 pub struct CustomerOrderArgs {
     order_id: u64,
     customer: Pubkey,
@@ -254,8 +254,30 @@ pub fn handler(ctx: Context<AddCustomerOrder>, args: CustomerOrderArgs) -> Resul
         0 => ctx.accounts.pay_order(balance_due)?,
         _ => ctx.accounts.stripe_payment(current_index, balance_due)?
     }
+    
+    ctx.accounts.add_order(args.clone(), balance_due, ctx.bumps.customer, ctx.bumps.order)?;
 
-    ctx.accounts.add_order(args, balance_due, ctx.bumps.customer, ctx.bumps.order)?;
+    // Emit the new order event
+    emit!(NewOrderCreated {
+        order_id: args.order_id,
+        customer: args.customer,
+        items: args.items.clone(),
+        total: balance_due,
+        status: StatusType::Pending,
+        created_at: args.created_at,
+        restaurant: ctx.accounts.restaurant.key(),
+    });
 
     Ok(())
+}
+
+#[event]
+pub struct NewOrderCreated {
+    pub order_id: u64,
+    pub customer: Pubkey,
+    pub items: Vec<u64>,
+    pub total: u64,
+    pub status: StatusType,
+    pub created_at: i64,
+    pub restaurant: Pubkey,
 }

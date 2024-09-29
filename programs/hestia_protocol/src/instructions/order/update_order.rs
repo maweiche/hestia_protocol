@@ -61,6 +61,22 @@ pub fn handler(ctx: Context<UpdateCustomerOrder>, args: UpdateOrderArgs) -> Resu
     let status_type = StatusType::from_u8(args.status)
         .ok_or(OrderError::InvalidStatusType)?;
 
+    
+
+    let order = &ctx.accounts.order;
+
+    // Emit the new order event
+    emit!(OrderUpdated {
+        order_id: order.order_id,
+        customer: order.customer,
+        items: order.items.clone(),
+        total: order.total,
+        status: StatusType::Pending,
+        created_at: order.created_at,
+        updated_at: Clock::get()?.unix_timestamp,
+        restaurant: ctx.accounts.restaurant.key(),
+    });
+
     ctx.accounts.update_order(status_type)
 }
 
@@ -74,4 +90,16 @@ impl StatusType {
             _ => None,
         }
     }
+}
+
+#[event]
+pub struct OrderUpdated {
+    pub order_id: u64,
+    pub customer: Pubkey,
+    pub items: Vec<u64>,
+    pub total: u64,
+    pub status: StatusType,
+    pub created_at: i64,
+    pub updated_at: i64,
+    pub restaurant: Pubkey,
 }

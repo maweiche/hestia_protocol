@@ -38,7 +38,7 @@ pub struct AdminInit<'info> {
 impl<'info> AdminInit<'info> {
     /// Initializes the AdminProfile account with provided username and creation time
     pub fn initialize_admin_profile(&mut self, username: String, bump: u8) -> Result<()> {
-        let creation_time = Clock::get()?.unix_timestamp - 20 * 60 * 60; // 20 hours ago
+        let creation_time = Clock::get()?.unix_timestamp - 20 * 60 * 60; 
         self.admin_profile.set_inner(AdminProfile {
             username,
             creation_time,
