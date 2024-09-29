@@ -1,6 +1,8 @@
 use anchor_lang::prelude::*;
 use mpl_core::types::OracleValidation;
 
+/// Protocol-level Structures
+
 #[account]
 pub struct Protocol {
     pub validation: OracleValidation,
@@ -20,7 +22,6 @@ impl Space for Manager {
     const INIT_SPACE: usize = 8 + 1;
 }
 
-
 #[account]
 pub struct AdminProfile {
     pub username: String,
@@ -31,6 +32,8 @@ pub struct AdminProfile {
 impl Space for AdminProfile {
     const INIT_SPACE: usize = 8 + 32 + 4 + 8 + 1;
 }
+
+/// Restaurant-related Structures
 
 #[account]
 pub struct Restaurant {
@@ -50,9 +53,9 @@ impl Space for Restaurant {
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace)]
 pub enum RestaurantType {
-    Foodtruck, // 0
-    Cafe, // 1
-    Restaurant, // 2
+    Foodtruck,
+    Cafe,
+    Restaurant,
 }
 
 #[account]
@@ -71,21 +74,23 @@ impl Space for Employee {
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace, PartialEq)]
 pub enum EmployeeType {
-    TeamMember, // 0
-    TeamLeader, // 1
-    Manager, // 2
-    Director, // 3
+    TeamMember,
+    TeamLeader,
+    Manager,
+    Director,
 }
+
+/// Inventory-related Structures
 
 #[account]
 pub struct InventoryItem {
-    pub sku: String,              // Stock Keeping Unit -- how we identify the product
-    pub category: InventoryCategoryType,      // Category of the product -- stored as public key for easy sorting and filtering
-    pub name: String,          // Name of the product -- what the product is called
-    pub price: u64,            // Price of the product -- how much it costs for ordering
-    pub stock: u64,            // Stock of the product -- how many units are available, will be updated as orders are made
-    pub last_order: i64,       // Last time the product was ordered -- stored as unix timestamp
-    pub initialized: bool,     // Initialized status of the product -- whether it is available for ordering
+    pub sku: String,
+    pub category: InventoryCategoryType,
+    pub name: String,
+    pub price: u64,
+    pub stock: u64,
+    pub last_order: i64,
+    pub initialized: bool,
     pub bump: u8,
 }
 
@@ -95,16 +100,18 @@ impl Space for InventoryItem {
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace)]
 pub enum InventoryCategoryType {
-    PaperGoods, // 0
-    CleaningSupplies, // 1
-    Food, // 2
-    Beverages, // 3
-    Alcohol, // 4
-    Equipment, // 5
-    Uniform, // 6
-    Marketing, // 7
-    Other, // 8
+    PaperGoods,
+    CleaningSupplies,
+    Food,
+    Beverages,
+    Alcohol,
+    Equipment,
+    Uniform,
+    Marketing,
+    Other,
 }
+
+/// Menu-related Structures
 
 #[account]
 pub struct Menu {
@@ -127,20 +134,19 @@ pub struct MenuItem {
     pub bump: u8,
 }
 
-
 impl Space for MenuItem {
-    const INIT_SPACE: usize = 8 + 4  + MenuCategoryType::INIT_SPACE + 4 + 8 + 4 + 4 + 1; //TODO() - Double check bool space
+    const INIT_SPACE: usize = 8 + 4 + MenuCategoryType::INIT_SPACE + 4 + 8 + 4 + 4 + 1;
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace)]
 pub enum MenuCategoryType {
-    Combo, // 0
-    Side, // 1
-    Entree, // 2
-    Dessert, // 3
-    Beverage, // 4
-    Alcohol, // 5
-    Other, // 6
+    Combo,
+    Side,
+    Entree,
+    Dessert,
+    Beverage,
+    Alcohol,
+    Other,
 }
 
 #[account]
@@ -153,6 +159,8 @@ pub struct IngredientList {
 impl Space for IngredientList {
     const INIT_SPACE: usize = 8 + 32 + 4 + 1;
 }
+
+/// Customer-related Structures
 
 #[account]
 pub struct Customer {
@@ -171,13 +179,13 @@ impl Space for Customer {
 
 #[account]
 pub struct CustomerOrder {
-    pub order_id: u64,         // Order ID -- unique identifier for the order
-    pub customer: Pubkey,      // Customer of the order -- who made the order
-    pub items: Vec<u64>,       // Items in the order -- what products were ordered, skus of the products
-    pub total: u64,            // Total of the order -- how much the order costs
-    pub status: StatusType,            // Status of the order -- what state the order is in (0: pending, 1: completed, 2: finalized, 3: cancelled)
-    pub created_at: i64,       // Created at -- when the order was made, stored as unix timestamp
-    pub updated_at: Option<i64>,       // Updated at -- when the order was last updated, stored as unix timestamp
+    pub order_id: u64,
+    pub customer: Pubkey,
+    pub items: Vec<u64>,
+    pub total: u64,
+    pub status: StatusType,
+    pub created_at: i64,
+    pub updated_at: Option<i64>,
     pub bump: u8,
 }
 
@@ -187,11 +195,13 @@ impl Space for CustomerOrder {
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone, InitSpace, PartialEq)]
 pub enum StatusType {
-    Pending, // 0
-    Completed, // 1
-    Finalized, // 2
-    Cancelled, // 3
+    Pending,
+    Completed,
+    Finalized,
+    Cancelled,
 }
+
+/// Reward-related Structures
 
 #[account]
 pub struct Reward {
@@ -207,7 +217,7 @@ impl Space for Reward {
 }
 
 #[account]
-pub struct RewardVoucher{
+pub struct RewardVoucher {
     pub id: u64,
     pub item_sku: u64,
     pub reward: Pubkey,
@@ -221,7 +231,7 @@ pub struct RewardVoucher{
 }
 
 impl Space for RewardVoucher {
-    const INIT_SPACE: usize = 8 + 8 + 32 + 32 + MenuCategoryType::INIT_SPACE + 2 + 2 + 8 + 8 +1;
+    const INIT_SPACE: usize = 8 + 8 + 32 + 32 + MenuCategoryType::INIT_SPACE + 2 + 2 + 8 + 8 + 1;
 }
 
 #[account]

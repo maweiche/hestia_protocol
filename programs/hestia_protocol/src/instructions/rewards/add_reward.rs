@@ -1,8 +1,22 @@
 use anchor_lang::prelude::*;
 use crate::{
-    errors::SetupError, state::{AdminProfile, Manager, MenuCategoryType, Restaurant, RewardVoucher}
+    errors::RewardError,
+    state::{AdminProfile, Manager, MenuCategoryType, Restaurant, RewardVoucher}
 };
 use mpl_core::accounts::BaseCollectionV1;
+
+/*
+    Add Reward Voucher Instruction
+
+    Functionality:
+    - Creates a new RewardVoucher account for a specific reward
+    - Links the voucher to a menu item and sets its properties
+
+    Security checks:
+    - Ensures the signer is the restaurant admin
+    - Verifies that the restaurant belongs to the admin
+    - Checks that the reward's update authority is the manager
+*/
 
 #[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct AddRewardVoucherArgs {
@@ -20,22 +34,27 @@ pub struct AddRewardVoucherArgs {
 pub struct AddRewardVoucher<'info> {
     #[account(mut)]
     pub restaurant_admin: Signer<'info>,
+
     #[account(
         seeds = [b"admin", restaurant_admin.key().as_ref()],
-        bump
+        bump = admin_profile.bump,
     )]
     pub admin_profile: Account<'info, AdminProfile>,
+
     #[account(
-        constraint = restaurant.owner == *restaurant_admin.key,
+        constraint = restaurant.owner == restaurant_admin.key() @ RewardError::Unauthorized,
     )] 
     pub restaurant: Account<'info, Restaurant>,
+
     #[account(
         seeds = [b"manager"],
         bump = manager.bump,
     )]
     pub manager: Account<'info, Manager>,
-    #[account(constraint = reward.update_authority == manager.key())] 
+
+    #[account(constraint = reward.update_authority == manager.key() @ RewardError::InvalidRewardAuthority)] 
     pub reward: Account<'info, BaseCollectionV1>,
+
     #[account(
         init,
         payer = restaurant_admin,
@@ -44,63 +63,47 @@ pub struct AddRewardVoucher<'info> {
         bump,
     )] 
     pub voucher: Account<'info, RewardVoucher>,
+
     pub system_program: Program<'info, System>,
 }
 
 impl<'info> AddRewardVoucher<'info> {
-    pub fn add_reward_voucher(
-        &mut self, 
-        id: u64, 
-        item_sku: u64,
-        price: u64,
-        share: u16,
-        category: MenuCategoryType, 
-        starting_time: i64,
-        bump: u8
-    ) -> Result<()> {
+    pub fn add_reward_voucher(&mut self, args: AddRewardVoucherArgs, bump: u8) -> Result<()> {
+        let category = MenuCategoryType::from_u8(args.category)
+            .ok_or(RewardError::InvalidCategory)?;
 
-        self.voucher.set_inner(
-            RewardVoucher {
-                id,
-                item_sku,
-                reward: self.reward.key(),
-                restaurant: self.restaurant.key(),
-                category,
-                share,
-                share_sold: 0, 
-                price,
-                starting_time,
-                bump,
-            }
-        );
+        self.voucher.set_inner(RewardVoucher {
+            id: args.id,
+            item_sku: args.item_sku,
+            reward: self.reward.key(),
+            restaurant: self.restaurant.key(),
+            category,
+            share: args.share,
+            share_sold: 0, 
+            price: args.price,
+            starting_time: args.starting_time,
+            bump,
+        });
         
-       Ok(())
+        Ok(())
     } 
 }
 
 pub fn handler(ctx: Context<AddRewardVoucher>, args: AddRewardVoucherArgs) -> Result<()> {
-    let bump = ctx.bumps.voucher;
+    ctx.accounts.add_reward_voucher(args, ctx.bumps.voucher)
+}
 
-    let category = match args.category {
-        0 => MenuCategoryType::Combo,
-        1 => MenuCategoryType::Side,
-        2 => MenuCategoryType::Entree,
-        3 => MenuCategoryType::Dessert,
-        4 => MenuCategoryType::Beverage,
-        5 => MenuCategoryType::Alcohol,
-        6 => MenuCategoryType::Other,
-        _ => return Err(SetupError::InvalidType.into()),
-    };
-
-    ctx.accounts.add_reward_voucher(
-        args.id, 
-        args.item_sku,
-        args.price, 
-        args.share, 
-        category, 
-        args.starting_time, 
-        bump
-    )?;
-
-    Ok(())
+impl MenuCategoryType {
+    fn from_u8(value: u8) -> Option<Self> {
+        match value {
+            0 => Some(Self::Combo),
+            1 => Some(Self::Side),
+            2 => Some(Self::Entree),
+            3 => Some(Self::Dessert),
+            4 => Some(Self::Beverage),
+            5 => Some(Self::Alcohol),
+            6 => Some(Self::Other),
+            _ => None,
+        }
+    }
 }

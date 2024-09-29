@@ -82,3 +82,13 @@ pub enum OrderError {
     #[msg("The order does not belong to the correct restaurant")]
     InvalidRestaurant,
 }
+
+#[error_code]
+pub enum RewardError {
+    #[msg("Unauthorized access")]
+    Unauthorized,
+    #[msg("Invalid reward authority")]
+    InvalidRewardAuthority,
+    #[msg("Invalid category")]
+    InvalidCategory,
+}
