@@ -54,7 +54,7 @@ pub mod hestia_protocol {
     }
 
     // // remove restaurant employee -- removes perms to execute employee functions
-    pub fn restaurant_remove_employee(ctx: Context<DeleteEmployee>, args: DeleteEmployeeArgs) -> Result<()> {
+    pub fn restaurant_remove_employee(ctx: Context<RemoveEmployee>, args: RemoveEmployeeArgs) -> Result<()> {
         instructions::remove_employee::handler(ctx, args)
     }
 
@@ -119,7 +119,7 @@ pub mod hestia_protocol {
 
     // // buy reward -- allows a customer to buy a reward
     pub fn customer_buy_reward(ctx: Context<BuyRewardVoucher>, uri: String) -> Result<()> {
-        instructions::buy_reward::handler(ctx, uri)
+        instructions::buy_reward_voucher::handler(ctx, uri)
     }
 
     // // add order -- adds an order to the restaurant's order list

@@ -16,7 +16,9 @@ pub enum SetupError {
     #[msg("You used an invalid type")]
     InvalidType,
     #[msg("You cannot remove the primary admin")]
-    CannotRemovePrimaryAdmin
+    CannotRemovePrimaryAdmin,
+    #[msg("Employee does not belong here")]
+    EmployeeMismatch
 }
 
 #[error_code]

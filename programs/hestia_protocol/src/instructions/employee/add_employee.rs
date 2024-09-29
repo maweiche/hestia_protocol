@@ -1,6 +1,18 @@
 use anchor_lang::prelude::*;
 use crate::{state::{AdminProfile, Restaurant, Employee, EmployeeType}, errors::SetupError};
 
+/*
+    Add Employee Instruction
+
+    Functionality:
+    - Allows a restaurant admin to add a new employee to their restaurant.
+    - Creates a new Employee account with the provided details.
+
+    Security checks:
+    - Ensures the signer is the restaurant admin.
+    - Verifies that the restaurant belongs to the admin.
+*/
+
 #[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct AddEmployeeArgs {
     wallet: Pubkey,
@@ -21,50 +33,55 @@ pub struct AddEmployee<'info> {
         bump,
     )] 
     pub employee: Account<'info, Employee>,
+
     #[account(mut)]
     pub restaurant_admin: Signer<'info>,
+
     #[account(
         seeds = [b"admin", restaurant_admin.key().as_ref()],
         bump
     )]
     pub admin_profile: Account<'info, AdminProfile>,
+
     #[account(
-        constraint = restaurant.owner == *restaurant_admin.key,
+        constraint = restaurant.owner == *restaurant_admin.key @ SetupError::Unauthorized,
     )] 
     pub restaurant: Account<'info, Restaurant>,
+
     pub system_program: Program<'info, System>,
 }
 
 impl<'info> AddEmployee<'info> {
     pub fn add_employee(&mut self, employee_type: EmployeeType, args: AddEmployeeArgs, bump: u8) -> Result<()> {
+        self.employee.set_inner(Employee {
+            wallet: args.wallet,
+            restaurant: args.restaurant,
+            employee_type,
+            username: args.username,
+            initialized: true,
+            bump
+        });
 
-        self.employee.set_inner(
-            Employee {
-                wallet: args.wallet,
-                restaurant: args.restaurant,
-                employee_type,
-                username: args.username,
-                initialized: true,
-                bump
-            }
-        );
-
-       Ok(())
+        Ok(())
     }
 }
 
 pub fn handler(ctx: Context<AddEmployee>, args: AddEmployeeArgs) -> Result<()> {
-    let bump = ctx.bumps.employee;
+    let employee_type = EmployeeType::from_u8(args.employee_type)
+        .ok_or(SetupError::InvalidObjectType)?;
 
-    let object_type = match args.employee_type{
-        0 => EmployeeType::TeamMember,
-        1 => EmployeeType::TeamLeader,
-        2 => EmployeeType::Manager,
-        3 => EmployeeType::Director,
-        _ => return Err(SetupError::InvalidObjectType.into()),
-    };
+    ctx.accounts.add_employee(employee_type, args, ctx.bumps.employee)
+}
 
-    ctx.accounts.add_employee(object_type, args, bump)?;
-
-    Ok(())
+// Add this implementation to the EmployeeType enum
+impl EmployeeType {
+    fn from_u8(value: u8) -> Option<Self> {
+        match value {
+            0 => Some(Self::TeamMember),
+            1 => Some(Self::TeamLeader),
+            2 => Some(Self::Manager),
+            3 => Some(Self::Director),
+            _ => None,
+        }
+    }
 }
