@@ -198,6 +198,7 @@ impl Space for Reward {
 #[account]
 pub struct RewardVoucher{
     pub id: u64,
+    pub item_sku: u64,
     pub reward: Pubkey,
     pub restaurant: Pubkey,
     pub category: MenuCategoryType,

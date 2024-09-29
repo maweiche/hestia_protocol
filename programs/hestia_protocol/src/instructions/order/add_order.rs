@@ -13,13 +13,21 @@ use anchor_spl::{
 };
 use std::str::FromStr;
 use crate::{
-    state::{Customer, CustomerOrder, Restaurant, StatusType}, 
+    state::{MenuItem, Customer, CustomerOrder, Restaurant, StatusType, Manager, RewardVoucher}, 
     errors::BuyingError,
     constants::{
         // protocol_currency, 
         signing_authority, 
         ED25519_PROGRAM_ID
     },
+};
+
+use mpl_core::{
+    ID as MPL_CORE_PROGRAM_ID,
+    fetch_plugin,
+    accounts::{BaseAssetV1, BaseCollectionV1},
+    types::{UpdateAuthority, Plugin, FreezeDelegate, PluginType, Royalties},
+    instructions::{UpdatePluginV1CpiBuilder, RemovePluginV1CpiBuilder, TransferV1CpiBuilder, BurnV1CpiBuilder}
 };
 
 #[derive(AnchorDeserialize, AnchorSerialize)]
@@ -32,6 +40,7 @@ pub struct CustomerOrderArgs {
     status: u8,
     created_at: i64,
     updated_at: Option<i64>,
+    use_reward: bool,
     bump: u8
 }
 
@@ -72,16 +81,56 @@ pub struct AddCustomerOrder<'info> {
     pub restaurant_ata: Account<'info, TokenAccount>,
     #[account(mut)] 
     pub restaurant: Account<'info, Restaurant>,
+    #[account(
+        seeds = [b"manager"],
+        bump = manager.bump,
+    )]
+    pub manager: Account<'info, Manager>,
+    #[account(constraint = reward.update_authority == manager.key())] 
+    pub reward: Option<Account<'info, BaseCollectionV1>>,
+    #[account(
+        seeds = [b"voucher", reward.as_ref().unwrap().key().as_ref()],
+        bump,
+    )] 
+    pub voucher: Option<Account<'info, RewardVoucher>>,
+    #[account(mut)] 
+    pub customer_voucher: Option<Signer<'info>>,
+    #[account(
+        seeds = [b"item", voucher.as_ref().unwrap().item_sku.to_le_bytes().as_ref()],
+        bump,
+    )] 
+    pub menu_item: Account<'info, MenuItem>,
     #[account(address = instructions::ID)]
     /// CHECK: InstructionsSysvar account
     instructions: UncheckedAccount<'info>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Program<'info, Token>,
+    #[account(address = MPL_CORE_PROGRAM_ID)]
+    /// CHECK: This account will be checked by the constraint
+    pub mpl_core_program: Option<UncheckedAccount<'info>>,
     pub system_program: Program<'info, System>,
 }
 
 impl<'info> AddCustomerOrder<'info> {
     pub fn add_order(&mut self, args: CustomerOrderArgs, customer_bump: u8, order_bump: u8) -> Result<()> {
+        // If the customer is using a reward, then the reward will be burned
+        if args.use_reward {
+            // require that voucher.item_sku is = menu_item.sku
+            // require!(
+            //     self.voucher.as_ref().unwrap().item_sku == self.item.sku.parse::<u64>().unwrap(),
+            //     BuyingError::InvalidRewardItem
+            // );
+            
+            let signer_seeds: &[&[u8]; 2] = &[b"manager", &[self.manager.bump]];
+
+            BurnV1CpiBuilder::new(&self.mpl_core_program.as_ref().unwrap().to_account_info())
+            .asset(&self.customer_voucher.as_ref().unwrap().to_account_info())
+            .collection(Some(&self.reward.as_ref().unwrap().to_account_info()))
+            .payer(&self.signer.to_account_info())
+            .authority(Some(&self.manager.to_account_info()))
+            .invoke_signed(&[signer_seeds])?;
+
+        };
 
         if !self.customer.initialized {
             self.customer.set_inner(
@@ -113,7 +162,7 @@ impl<'info> AddCustomerOrder<'info> {
        Ok(())
     }
 
-    pub fn pay_order(&mut self, args: &CustomerOrderArgs) -> Result<()> {
+    pub fn pay_order(&mut self, args: &CustomerOrderArgs, balance_due: u64) -> Result<()> {
 
         transfer(
             CpiContext::new(
@@ -124,13 +173,13 @@ impl<'info> AddCustomerOrder<'info> {
                     authority: self.signer.to_account_info(),
                 }
             ),
-            args.total * 10u64.pow(self.currency.decimals as u32),
+            balance_due * 10u64.pow(self.currency.decimals as u32),
         )?;
 
         Ok(())
     }
 
-    pub fn stripe_payment(&mut self, current_index: usize, args:& CustomerOrderArgs) -> Result<()> {
+    pub fn stripe_payment(&mut self, current_index: usize, args:& CustomerOrderArgs, balance_due: u64) -> Result<()> {
         let ixs = self.instructions.to_account_info();
 
         if let Ok(signature_ix) = load_instruction_at_checked(current_index - 1, &ixs) {
@@ -149,7 +198,7 @@ impl<'info> AddCustomerOrder<'info> {
                 let amount_paid = amount as u64;
 
                 require!(
-                    amount_paid <= args.total * 10u64.pow(self.currency.decimals as u32),
+                    amount_paid <= balance_due * 10u64.pow(self.currency.decimals as u32),
                     BuyingError::PriceMismatch
                 );
             } else {
@@ -170,10 +219,25 @@ pub fn handler(ctx: Context<AddCustomerOrder>, _args: CustomerOrderArgs) -> Resu
     let ixs = ctx.accounts.instructions.to_account_info();
     let current_index = load_current_index_checked(&ixs)? as usize;
 
+    let mut balance_due = args.total;
+    // If the customer is using a reward, then the reward will be burned
+    if args.use_reward {
+        // require that voucher.item_sku is = menu_item.sku
+        // require!(
+        //     self.voucher.as_ref().unwrap().item_sku == self.item.sku.parse::<u64>().unwrap(),
+        //     BuyingError::InvalidRewardItem
+        // );
+
+        let menu_item_price = ctx.accounts.menu_item.price; 
+
+        // subtract the price of the menu item from the total
+        balance_due -= menu_item_price; 
+    };
+
     // If the current index is 0, then the buyer must pay the fraction via the listing currency, else it's a stripe payment
     match current_index {
-        0 => ctx.accounts.pay_order(&args)?,
-        _ => ctx.accounts.stripe_payment(current_index, &args)?
+        0 => ctx.accounts.pay_order(&args, balance_due)?,
+        _ => ctx.accounts.stripe_payment(current_index, &args, balance_due)?
     }
 
     ctx.accounts.add_order(args, ctx.accounts.customer.bump, bump)?;

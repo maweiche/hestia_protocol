@@ -7,6 +7,7 @@ use mpl_core::accounts::BaseCollectionV1;
 #[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct AddRewardVoucherArgs {
     pub id: u64,
+    pub item_sku: u64,
     pub reward: Pubkey,
     pub category: u8,
     pub share: u16,
@@ -50,6 +51,7 @@ impl<'info> AddRewardVoucher<'info> {
     pub fn add_reward_voucher(
         &mut self, 
         id: u64, 
+        item_sku: u64,
         price: u64,
         share: u16,
         category: MenuCategoryType, 
@@ -60,6 +62,7 @@ impl<'info> AddRewardVoucher<'info> {
         self.voucher.set_inner(
             RewardVoucher {
                 id,
+                item_sku,
                 reward: self.reward.key(),
                 restaurant: self.restaurant.key(),
                 category,
@@ -91,6 +94,7 @@ pub fn handler(ctx: Context<AddRewardVoucher>, args: AddRewardVoucherArgs) -> Re
 
     ctx.accounts.add_reward_voucher(
         args.id, 
+        args.item_sku,
         args.price, 
         args.share, 
         category, 
