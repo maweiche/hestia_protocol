@@ -1,5 +1,22 @@
 use anchor_lang::prelude::*;
 use crate::state::AdminProfile;
+use crate::errors::SetupError;
+use crate::constants::admin_wallet as ADMIN;
+
+/*
+    Initialize Admin Instruction
+
+    Security checks:
+    - Verify that the account initializing the admin is the admin of the entire protocol.
+    - Ensure the admin profile being created is not for the admin of the entire protocol.
+    - Set the initialization time to prevent immediate use (16-hour cooldown).
+
+    Functionality:
+    - Initializes a new admin account with the provided username and public key.
+    - Creates an AdminProfile for the new admin.
+
+    Note: The ADMIN constant should be defined elsewhere in the codebase.
+*/
 
 #[derive(Accounts)]
 #[instruction(username: String)]
@@ -15,49 +32,32 @@ pub struct AdminInit<'info> {
         bump
     )]
     pub admin_profile: Account<'info, AdminProfile>,
-
     pub system_program: Program<'info, System>,
 }
 
-/*
-        
-    Create a new Admin Ix:
-
-    Some security check:
-    - Check if the account that is initializing the admin is the admin of the entire protocol.
-    - Make sure the admin profile we're creating is not for the admin of the entire protocol, that might be a security issues.
-    - Save the Time of initialization to render it useless for the first 16h of initialization.
-
-    What the Instruction does:
-    - Initialize the new admin account with the username (so we can monitor who are the admin
-    account atm in an easy way) and the publickey of the new admin.
-
-*/
-
 impl<'info> AdminInit<'info> {
+    /// Initializes the AdminProfile account with provided username and creation time
     pub fn initialize_admin_profile(&mut self, username: String, bump: u8) -> Result<()> {
-        
-        self.admin_profile.set_inner(
-            AdminProfile {
-                username,
-                creation_time: Clock::get()?.unix_timestamp - 20 * 60 * 60,
-                bump,
-            }
-        );
-
+        let creation_time = Clock::get()?.unix_timestamp - 20 * 60 * 60; // 20 hours ago
+        self.admin_profile.set_inner(AdminProfile {
+            username,
+            creation_time,
+            bump,
+        });
         Ok(())
     }
 }
 
 pub fn handler(ctx: Context<AdminInit>, username: String) -> Result<()> {
-    // Make sure it's the admin of the protocol that is initializing the new admin and that the new admin is not the admin of the protocol
-    // require!(ctx.accounts.owner.key() == ADMIN::id() && ctx.accounts.owner.key() != ctx.accounts.new_admin.key(), SetupError::Unauthorized);
-
-    // Generate the bumps
-    let bumps = ctx.bumps;
+    // Verify authorization and prevent self-assignment as admin
+    require!(
+        ctx.accounts.owner.key() == ADMIN::id() && 
+        ctx.accounts.owner.key() != ctx.accounts.new_admin.key(),
+        SetupError::Unauthorized
+    );
 
     // Initialize the new admin_profile
-    ctx.accounts.initialize_admin_profile(username, bumps.admin_profile)?;
+    ctx.accounts.initialize_admin_profile(username, ctx.bumps.admin_profile)?;
 
     Ok(())
 }

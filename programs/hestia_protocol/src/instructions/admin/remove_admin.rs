@@ -1,73 +1,72 @@
 use anchor_lang::prelude::*;
 use crate::state::{ AdminProfile, Protocol };
+use crate::errors::SetupError;
+use crate::constants::admin_wallet as ADMIN;
 
+/*
+    Remove Admin Instruction
+
+    Security checks:
+    - Verify that the account removing the admin is the primary admin (from the multisig wallet).
+    - Ensure the admin being removed is not the primary admin of the protocol.
+
+    Functionality:
+    - Closes the AdminProfile account of the admin being removed.
+    - Returns the account rent of the AdminProfile to the primary admin's account.
+
+    Note: This instruction should only be used when an admin account is compromised.
+*/
 
 #[derive(Accounts)]
 pub struct AdminRemove<'info> {
-    /// CHECK: This is the admin being removed, it's ok because the signer will be required to be the overall authority on program
+    /// The admin being removed
     #[account(mut)]
     pub admin: AccountInfo<'info>,
+
     #[account(
         mut,
-        close = primary_admin, // this is where the account rent funds will be sent to after the admin is removed
+        close = primary_admin,
         seeds = [b"admin", admin.key().as_ref()],
         bump
     )]
     pub admin_profile: Account<'info, AdminProfile>,
+
+    #[account(mut)]
     pub primary_admin: Signer<'info>,
+
     #[account(
         seeds = [b"protocol"],
         bump,
     )]
     pub protocol: Account<'info, Protocol>,
+
     pub system_program: Program<'info, System>,
 }
 
-/*
-        
-    Create a new Admin Ix:
-
-    Some security check:
-    - Check if the account that is initializing the admin is the admin of the entire protocol.
-    - Make sure the admin profile we're creating is not for the admin of the entire protocol, that might be a security issues.
-    - Save the Time of initialization to render it useless for the first 16h of initialization.
-
-    What the Instruction does:
-    - Initialize the new admin account with the username (so we can monitor who are the admin
-    account atm in an easy way) and the publickey of the new admin.
-
-*/
-
-
 impl<'info> AdminRemove<'info> {
-    pub fn remove_admin(
-        &mut self
-    ) -> Result<()> {
-
-        /*
-        
-            Remove Admin Ix:
-
-            Some security check:
-            - Check if the account signing is the primary admin from the multisig wallet.
-
-            What the Instruction does:
-            - Closes the Admin_State account which is necessary for Admin rights, this is intended to only be used when the admin is compromised.
-            - Returns any account rent of the Admin_State account to the multisig wallet.   
-
-        */
-        
-        
+    /// Removes the admin by closing their AdminProfile account
+    pub fn remove_admin(&mut self) -> Result<()> {
+        // The actual removal is handled by the `close = primary_admin` constraint
+        // in the AdminRemove struct. No additional logic is needed here.
         Ok(())
     }
 }
 
-
 pub fn handler(ctx: Context<AdminRemove>) -> Result<()> {
-    // Make sure it's the admin of the protocol that is initializing the new admin and that the new admin is not the admin of the protocol
-    // require!(ctx.accounts.owner.key() == ADMIN::id() && ctx.accounts.owner.key() != ctx.accounts.new_admin.key(), SetupError::Unauthorized);
+    // Verify that the signer is the primary admin
+    require!(
+        ctx.accounts.primary_admin.key() == ADMIN::id(),
+        SetupError::Unauthorized
+    );
 
-    // Initialize the new admin_profile
+    // Ensure the admin being removed is not the primary admin
+    require!(
+        ctx.accounts.admin.key() != ADMIN::id(),
+        SetupError::CannotRemovePrimaryAdmin
+    );
+
+    // The actual removal is handled by the Account constraints
+    // We just need to call the remove_admin function to satisfy the instruction
     ctx.accounts.remove_admin()?;
 
     Ok(())

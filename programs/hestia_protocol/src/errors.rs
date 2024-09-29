@@ -15,6 +15,8 @@ pub enum SetupError {
     InvalidObjectType,
     #[msg("You used an invalid type")]
     InvalidType,
+    #[msg("You cannot remove the primary admin")]
+    CannotRemovePrimaryAdmin
 }
 
 #[error_code]
