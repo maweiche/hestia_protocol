@@ -68,14 +68,9 @@ pub mod hestia_protocol {
         instructions::add_inventory::handler(ctx, args)
     }
 
-    // // update an inventory item -- updates an item in the restaurant's inventory
-    pub fn restaurant_update_inventory_item(ctx: Context<AddInventory>, args: AddInventoryArgs) -> Result<()> {
-        instructions::add_inventory::handler(ctx, args)
-    }
-
     // // remove an inventory item -- removes an item from the restaurant's inventory
-    pub fn restaurant_remove_inventory_item(ctx: Context<RemoveInventory>) -> Result<()> {
-        instructions::remove_inventory::handler(ctx)
+    pub fn restaurant_remove_inventory_item(ctx: Context<RemoveInventory>, args: RemoveInventoryArgs) -> Result<()> {
+        instructions::remove_inventory::handler(ctx, args)
     }
 
     // // add menu item -- adds an item to the restaurant's menu, category based on enum
