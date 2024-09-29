@@ -494,6 +494,5 @@ The Vision - Sol Factory Solana Program is licensed under the [MIT License](http
 
 
 <!-- TOODO!!! -->
-- ix comments needed for menu, remove_reward, lib, refine errors, state
-- readme fix
+- ix comments needed for menu, remove_reward, , refine errors
 - demo video record
