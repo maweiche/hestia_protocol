@@ -2,7 +2,6 @@ use anchor_lang::{
     prelude::*, 
     solana_program::program_memory::sol_memcpy,
 };
-   
 use mpl_core::{
     ID as MPL_CORE_PROGRAM_ID,
     accounts::BaseCollectionV1,
@@ -12,6 +11,19 @@ use crate::{
     state::{RewardVoucher, CompletedRewardVoucher, Customer, Restaurant, Manager, Protocol},
     errors::BuyingError
 };
+
+/*
+    Buy Reward Voucher Instruction
+
+    Functionality:
+    - Allows a customer to purchase a reward voucher using their reward points.
+    - Creates a new asset (voucher) for the customer using the MPL Core program.
+    - Updates the voucher state (completes it if all shares are sold).
+
+    Security checks:
+    - Ensures the customer has enough reward points to purchase the voucher.
+    - Verifies that the reward's update authority matches the manager's key.
+*/
 
 #[derive(Accounts)]
 pub struct BuyRewardVoucher<'info> {
@@ -45,70 +57,80 @@ pub struct BuyRewardVoucher<'info> {
     )]
     pub protocol: Account<'info, Protocol>,
     #[account(address = MPL_CORE_PROGRAM_ID)]
-    /// CHECK: This account will be checked by the constraint
+    /// CHECK: This account will be checked by the MPL Core program
     pub mpl_core_program: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
 }
 
 impl<'info> BuyRewardVoucher<'info> {
     pub fn buy_reward(&mut self, uri: String) -> Result<()> {
-
-        let customer_point_balance = self.customer.reward_points;
-        let voucher_price = self.voucher.price;
-
+        // Check if customer has enough points
         require!(
-            voucher_price <= customer_point_balance,
-            BuyingError::PriceMismatch
+            self.voucher.price <= self.customer.reward_points,
+            BuyingError::InsufficientPoints
         );
 
-        self.customer.reward_points = customer_point_balance - voucher_price;
+        // Deduct points from customer
+        self.customer.reward_points -= self.voucher.price;
 
-        // create seeds to use later on for the CPI calls
+        // Create the voucher asset
+        self.create_voucher_asset(&uri)?;
+
+        // Update voucher state
+        self.update_voucher_state()?;
+
+        Ok(())
+    }
+
+    fn create_voucher_asset(&self, uri: &str) -> Result<()> {
         let signer_seeds: &[&[u8]; 2] = &[b"manager", &[self.manager.bump]];
 
         CreateV1CpiBuilder::new(&self.mpl_core_program.to_account_info())
-        .asset(&self.customer_voucher.to_account_info())
-        .collection(Some(&self.reward.to_account_info()))
-        .authority(Some(&self.manager.to_account_info()))
-        .payer(&self.payer.to_account_info())
-        .owner(Some(&self.signer.to_account_info()))
-        .system_program(&self.system_program.to_account_info())
-        .name(format!("{} - {}", self.reward.name, self.voucher.id))
-        .uri(uri)
-        .add_remaining_account(&self.protocol.to_account_info(), false, false)
-        .invoke_signed(&[signer_seeds])?;
+            .asset(&self.customer_voucher.to_account_info())
+            .collection(Some(&self.reward.to_account_info()))
+            .authority(Some(&self.manager.to_account_info()))
+            .payer(&self.payer.to_account_info())
+            .owner(Some(&self.signer.to_account_info()))
+            .system_program(&self.system_program.to_account_info())
+            .name(format!("{} - {}", self.reward.name, self.voucher.id))
+            .uri(uri.to_string())
+            .add_remaining_account(&self.protocol.to_account_info(), false, false)
+            .invoke_signed(&[signer_seeds])?;
 
+        Ok(())
+    }
+
+    fn update_voucher_state(&mut self) -> Result<()> {
         if self.voucher.share_sold + 1 == self.voucher.share {
-            let info = self.voucher.to_account_info(); 
-            let mut data = info.try_borrow_mut_data()?;
-
-            // Transform to CompletedListing
-            let completed_reward_voucher = CompletedRewardVoucher {
-                id: self.voucher.id,
-                category: self.voucher.category.clone(),
-                reward: self.voucher.reward,
-                share: self.voucher.share,
-                price: self.voucher.price,
-                bump: self.voucher.bump,
-            };
-
-            // Serialize
-            let mut writer: Vec<u8> = vec![];
-            completed_reward_voucher.try_serialize(&mut writer)?;
-            writer.truncate(CompletedRewardVoucher::INIT_SPACE);
-
-            sol_memcpy(&mut data, &writer, writer.len());
+            self.complete_voucher()?;
         } else {
             self.voucher.share_sold += 1;
         }
+        Ok(())
+    }
 
+    fn complete_voucher(&self) -> Result<()> {
+        let info = self.voucher.to_account_info(); 
+        let mut data = info.try_borrow_mut_data()?;
+
+        let completed_reward_voucher = CompletedRewardVoucher {
+            id: self.voucher.id,
+            category: self.voucher.category.clone(),
+            reward: self.voucher.reward,
+            share: self.voucher.share,
+            price: self.voucher.price,
+            bump: self.voucher.bump,
+        };
+
+        let mut writer: Vec<u8> = Vec::with_capacity(CompletedRewardVoucher::INIT_SPACE);
+        completed_reward_voucher.try_serialize(&mut writer)?;
+        writer.truncate(CompletedRewardVoucher::INIT_SPACE);
+
+        sol_memcpy(&mut data, &writer, writer.len());
         Ok(())
     }
 }
 
 pub fn handler(ctx: Context<BuyRewardVoucher>, uri: String) -> Result<()> {
-
-    ctx.accounts.buy_reward(uri)?;
-  
-    Ok(())
+    ctx.accounts.buy_reward(uri)
 }

@@ -63,4 +63,6 @@ pub enum BuyingError {
     SignatureAuthorityMismatch,
     #[msg("Invalid instruction")]
     InvalidInstruction,
+    #[msg("Insufficient Points")]
+    InsufficientPoints
 }
