@@ -63,8 +63,8 @@ pub mod hestia_protocol {
         instructions::promote_employee::handler(ctx, args)
     }
  
-    // // add inventory item -- adds an item to the restaurant's inventory, category based on enum
-    pub fn restaurant_add_inventory_item(ctx: Context<AddInventory>, args: AddInventoryArgs) -> Result<()> {
+    // // manage an inventory item -- adds an item to the restaurant's inventory, category based on enum, if initialized already then it updates
+    pub fn restaurant_add_inventory_item(ctx: Context<ManageInventory>, args: InventoryArgs) -> Result<()> {
         instructions::add_inventory::handler(ctx, args)
     }
 

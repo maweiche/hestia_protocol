@@ -1,27 +1,31 @@
 use anchor_lang::prelude::*;
 use crate::{state::{AdminProfile, Restaurant, InventoryCategoryType, InventoryItem}, errors::SetupError};
 
+/*
+    Add/Update Inventory Instruction
+
+    Functionality:
+    - Allows a restaurant admin to add a new inventory item or update an existing one.
+    - Creates or updates an InventoryItem account with the provided details.
+
+    Security checks:
+    - Ensures the signer is the restaurant admin.
+    - Verifies that the restaurant belongs to the admin.
+*/
+
 #[derive(AnchorDeserialize, AnchorSerialize)]
-pub struct AddInventoryArgs {
+pub struct InventoryArgs {
     sku: String,
     category: u8,
     name: String,
     price: u64,
     stock: u64,
-    last_order: i64,
     initialized: bool,
-    bump: u8,
-}
-
-#[derive(AnchorDeserialize, AnchorSerialize)]
-pub struct DeductStockArgs {
-    sku: u64,
-    amount: u64,
 }
 
 #[derive(Accounts)]
-#[instruction(args: AddInventoryArgs)]
-pub struct AddInventory<'info> {
+#[instruction(args: InventoryArgs)]
+pub struct ManageInventory<'info> {
     #[account(
         init_if_needed,
         payer = restaurant_admin,
@@ -30,69 +34,74 @@ pub struct AddInventory<'info> {
         bump,
     )] 
     pub item: Account<'info, InventoryItem>,
+
     #[account(mut)]
     pub restaurant_admin: Signer<'info>,
+
     #[account(
         seeds = [b"admin", restaurant_admin.key().as_ref()],
-        bump
+        bump = admin_profile.bump,
     )]
     pub admin_profile: Account<'info, AdminProfile>,
+
     #[account(
-        constraint = restaurant.owner == *restaurant_admin.key,
+        constraint = restaurant.owner == restaurant_admin.key() @ SetupError::Unauthorized,
     )] 
     pub restaurant: Account<'info, Restaurant>,
+
     pub system_program: Program<'info, System>,
 }
 
-impl<'info> AddInventory<'info> {
-    pub fn add_inventory(&mut self, category: InventoryCategoryType, args: AddInventoryArgs, bump: u8) -> Result<()> {
-
-        self.item.set_inner(
-            InventoryItem {
-                sku: args.sku,
-                category,
-                name: args.name,
-                price: args.price,
-                stock: args.stock,
-                last_order: Clock::get()?.unix_timestamp - 20 * 60 * 60,
-                initialized: true,
-                bump
-            }
-        );
-
-       Ok(())
-    }
-
-    pub fn update_inventory(&mut self, args: AddInventoryArgs) -> Result<()> {
-        self.item.stock = args.stock;
-        self.item.price = args.price;
+impl<'info> ManageInventory<'info> {
+    pub fn add_inventory(&mut self, category: InventoryCategoryType, args: InventoryArgs, bump: u8) -> Result<()> {
+        self.item.set_inner(InventoryItem {
+            sku: args.sku,
+            category,
+            name: args.name,
+            price: args.price,
+            stock: args.stock,
+            last_order: Clock::get()?.unix_timestamp,
+            initialized: true,
+            bump,
+        });
 
         Ok(())
     }
 
+    pub fn update_inventory(&mut self, args: InventoryArgs) -> Result<()> {
+        self.item.stock = args.stock;
+        self.item.price = args.price;
+        self.item.last_order = Clock::get()?.unix_timestamp;
+
+        Ok(())
+    }
 }
 
-pub fn handler(ctx: Context<AddInventory>, args: AddInventoryArgs) -> Result<()> {
-    let bump = ctx.bumps.item;
-
-    let object_type = match args.category{
-        0 => InventoryCategoryType::PaperGoods,
-        1 => InventoryCategoryType::CleaningSupplies,
-        2 => InventoryCategoryType::Food,
-        3 => InventoryCategoryType::Beverages,
-        4 => InventoryCategoryType::Alcohol,
-        5 => InventoryCategoryType::Equipment,
-        6 => InventoryCategoryType::Uniform,
-        7 => InventoryCategoryType::Marketing,
-        8 => InventoryCategoryType::Other,
-        _ => return Err(SetupError::InvalidObjectType.into())
-    };
+pub fn handler(ctx: Context<ManageInventory>, args: InventoryArgs) -> Result<()> {
+    let category = InventoryCategoryType::from_u8(args.category)
+        .ok_or(SetupError::InvalidObjectType)?;
 
     if args.initialized {
-        ctx.accounts.update_inventory(args)?;
+        ctx.accounts.update_inventory(args)
     } else {
-        ctx.accounts.add_inventory(object_type, args, bump)?;
+        ctx.accounts.add_inventory(category, args, ctx.bumps.item)
     }
+}
 
-    Ok(())
-}  
+// Implement this method in the InventoryCategoryType enum
+impl InventoryCategoryType {
+    fn from_u8(value: u8) -> Option<Self> {
+        match value {
+            0 => Some(Self::PaperGoods),
+            1 => Some(Self::CleaningSupplies),
+            2 => Some(Self::Food),
+            3 => Some(Self::Beverages),
+            4 => Some(Self::Alcohol),
+            5 => Some(Self::Equipment),
+            6 => Some(Self::Uniform),
+            7 => Some(Self::Marketing),
+            8 => Some(Self::Other),
+            _ => None,
+        }
+    }
+}
